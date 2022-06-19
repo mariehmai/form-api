@@ -1,5 +1,3 @@
-
-
 class Form {
   public formId: string;
   public fields: Field[];
@@ -7,10 +5,12 @@ class Form {
   constructor(public title: string, public description?: string) {}
 
   public addField(field: Field) {
-    this.fields.push(field)
+    field.form = this;
+    this.fields.push(field);
   }
 }
 
 class Field {
   public fieldId: string;
+  public form: Form;
 }
