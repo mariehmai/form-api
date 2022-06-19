@@ -9,7 +9,7 @@ type FieldValueType = FieldType['value'];
 
 class Form {
   public formId: string;
-  public fields: Field<FieldValueType>[];
+  public fields: Field<FieldValueType>[] = [];
 
   constructor(public title: string, public description?: string) { }
 
@@ -32,7 +32,7 @@ class Field<TValue> {
   public fieldId: string;
   public form: Form;
   public value?: TValue;
-  public errors: string[];
+  public errors: string[] = [];
   public conditionalField: FieldType;
   public conditionalValue: FieldValueType;
 
@@ -139,3 +139,18 @@ class FileField extends Field<File> {
     }
   }
 }
+
+const plainText = new PlainTextField("How long did this take?");
+const emailText = new EmailTextField("Enter your email", "email@example.com");
+const booleanField = new BooleanField("Do you like TypeScript?", true);
+const selectField = new SingleSelectField("How many hours did you spend for this challenge?", [1, 2, 3], 3);
+const fileField = new FileField("Select a picture of yours");
+
+const form = new Form("Form API prototype");
+form.addField(plainText);
+form.addField(emailText);
+form.addField(booleanField);
+form.addField(selectField);
+// Will be after email field
+form.addFieldAtIndex(2, fileField);
+
