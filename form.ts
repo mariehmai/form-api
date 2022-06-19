@@ -22,6 +22,8 @@ class BaseField<TValue> {
   public form: Form;
   public value?: TValue;
   public errors: string[];
+  public conditionalField: Field;
+  public conditionalValue: Field['value'];
 
   constructor(public label: string, public required: boolean = false) { }
 
@@ -29,6 +31,15 @@ class BaseField<TValue> {
     if (this.required && !this.value) {
       this.errors.push('value cannot be empty')
     }
+  }
+
+  public addConditional(otherField: Field, conditionalValue: Field['value']) {
+    this.conditionalField = otherField;
+    this.conditionalValue = conditionalValue;
+  }
+
+  public get visible() {
+    return this.conditionalField.value === this.conditionalValue
   }
 }
 
