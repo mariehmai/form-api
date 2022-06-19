@@ -59,6 +59,8 @@ class Field<TValue> {
   }
 
   public get visible() {
+    if (!this.conditionalField) return true;
+
     return this.conditionalField.value === this.conditionalValue;
   }
 
@@ -143,7 +145,7 @@ class FileField extends Field<File> {
 const plainText = new PlainTextField("How long did this take?");
 const emailText = new EmailTextField("Enter your email", "email@example.com");
 const booleanField = new BooleanField("Do you like TypeScript?", true);
-const selectField = new SingleSelectField("How many hours did you spend for this challenge?", [1, 2, 3], 3);
+const selectField = new SingleSelectField("How much do you know about TS?", ["basic", "intermediate", "advanced"]);
 const fileField = new FileField("Select a picture of yours");
 
 const form = new Form("Form API prototype");
@@ -154,3 +156,6 @@ form.addField(selectField);
 // Will be after email field
 form.addFieldAtIndex(2, fileField);
 
+console.log("Without conditional, the field is visible by default", selectField.visible) // true
+selectField.addConditional(booleanField, false)
+console.log("With a conditional field not matching the value, the field is not visible", selectField.visible) // false
