@@ -1,4 +1,4 @@
-type Field = PlainTextField | EmailTextField
+type Field = PlainTextField | EmailTextField | BooleanField
 
 class Form {
   public formId: string;
@@ -32,7 +32,7 @@ class PlainTextField extends BaseField<string> {
   public maxLength?: number;
   public regex?: RegExp;
 
-  constructor(public label, public value?: string) {
+  constructor(public label: string, public value?: string) {
     super(label)
   }
 
@@ -58,8 +58,14 @@ class PlainTextField extends BaseField<string> {
 }
 
 class EmailTextField extends PlainTextField {
-  constructor(public label, public value?: string) {
+  constructor(public label: string, public value?: string) {
     super(label)
     this.regex = /^([A-Za-z0-9_\-\.])+\@([A-Za-z0-9_\-\.])+\.([A-Za-z]{2,4})$/
+  }
+}
+
+class BooleanField extends BaseField<boolean> {
+  constructor(public label: string, public value: boolean = false) {
+    super(label)
   }
 }
