@@ -18,7 +18,7 @@ class Form {
 
   public validate() { this.fields.forEach(f => f.validate()) }
 
-  public get isValid() { return this.fields.every(f => f.isValid)}
+  public get isValid() { return this.fields.every(f => f.isValid) }
 }
 
 class BaseField<TValue> {
@@ -37,7 +37,12 @@ class BaseField<TValue> {
     if (this.required && !this.value) {
       this.errors.push('value cannot be empty')
     }
+    if (this.value) {
+      this.validateValue(this.value)
+    }
   }
+
+  public validateValue(value: TValue) { }
 
   public get isValid() { return this.errors.length === 0 }
 
@@ -60,19 +65,14 @@ class PlainTextField extends BaseField<string> {
     super(label)
   }
 
-  public validate() {
-    this.validate();
-
-    if (!this.value) {
-      return;
-    }
-    if (this.minLength && this.value.length < this.minLength) {
+  public validateValue(value: string) {
+    if (this.minLength && value.length < this.minLength) {
       this.errors.push(`value must be at least ${this.minLength} characters`)
     }
-    if (this.maxLength && this.value.length > this.maxLength) {
+    if (this.maxLength && value.length > this.maxLength) {
       this.errors.push(`value must be at most ${this.maxLength} characters`)
     }
-    if (this.regex && !this.value.match(this.regex)) {
+    if (this.regex && !value.match(this.regex)) {
       this.errors.push("invalid format")
     }
   }
@@ -113,16 +113,11 @@ class FileField extends BaseField<File> {
     this.allowedExtensions.push(type);
   }
 
-  public validate() {
-    this.validate();
-
-    if (!this.value) {
-      return;
-    }
-    if (this.fileNameRegex && !this.value.name.match(this.fileNameRegex)) {
+  public validateValue(value: File) {
+    if (this.fileNameRegex && !value.name.match(this.fileNameRegex)) {
       this.errors.push(`invalid file name`)
     }
-    if (this.maxSize && this.value.size > this.maxSize) {
+    if (this.maxSize && value.size > this.maxSize) {
       this.errors.push(`file size must not exceeds ${this.maxSize} bytes`)
     }
   }
