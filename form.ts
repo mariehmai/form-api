@@ -94,9 +94,15 @@ class BooleanField extends BaseField<boolean> {
 class SingleSelectField<TOption> extends BaseField<TOption> {
   public selected?: TOption;
 
-  constructor(public label: string, public options: TOption[], defaultSelected?: typeof options[0]) {
+  constructor(public label: string, public options: TOption[], defaultSelected?: TOption) {
     super(label)
     this.selected = defaultSelected
+  }
+
+  public validateValue(value: TOption) {
+    if (!this.options.indexOf(value)) {
+      this.errors.push("value not in allowed choices")
+    }
   }
 }
 
