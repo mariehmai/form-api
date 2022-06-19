@@ -1,10 +1,14 @@
-type Field = PlainTextField | EmailTextField | BooleanField
+type Field =
+  | PlainTextField
+  | EmailTextField
+  | BooleanField
+  | SingleSelectField<unknown>
 
 class Form {
   public formId: string;
   public fields: Field[];
 
-  constructor(public title: string, public description?: string) {}
+  constructor(public title: string, public description?: string) { }
 
   public addField(field: Field) {
     field.form = this;
@@ -18,7 +22,7 @@ class BaseField<TValue> {
   public value?: TValue;
   public errors: string[];
 
-  constructor(public label: string, public required: boolean = false) {}
+  constructor(public label: string, public required: boolean = false) { }
 
   public validate() {
     if (this.required && !this.value) {
@@ -43,11 +47,11 @@ class PlainTextField extends BaseField<string> {
       return
     }
 
-    if (this.minLength && this.value.length < this.minLength ) {
+    if (this.minLength && this.value.length < this.minLength) {
       this.errors.push(`value must be at least ${this.minLength} characters`)
     }
 
-    if (this.maxLength && this.value.length > this.maxLength ) {
+    if (this.maxLength && this.value.length > this.maxLength) {
       this.errors.push(`value must be at most ${this.maxLength} characters`)
     }
 
@@ -67,5 +71,14 @@ class EmailTextField extends PlainTextField {
 class BooleanField extends BaseField<boolean> {
   constructor(public label: string, public value: boolean = false) {
     super(label)
+  }
+}
+
+class SingleSelectField<TOption> extends BaseField<TOption> {
+  public selected?: TOption;
+
+  constructor(public label: string, public options: TOption[], defaultSelected?: typeof options[0]) {
+    super(label)
+    this.selected = defaultSelected
   }
 }
