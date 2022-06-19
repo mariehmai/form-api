@@ -1,4 +1,4 @@
-type Field = PlainTextField
+type Field = PlainTextField | EmailTextField
 
 class Form {
   public formId: string;
@@ -12,27 +12,31 @@ class Form {
   }
 }
 
-class BaseField {
+class BaseField<TValue> {
   public fieldId: string;
   public form: Form;
+  public value?: TValue;
+  public errors: string[];
 
-  constructor(public label: string) {}
+  constructor(public label: string, public required: boolean = false) {}
+
+  public validate() {
+    if (this.required && !this.value) {
+      this.errors.push('value cannot be empty')
+    }
+  }
 }
 
-class PlainTextField extends BaseField {
+class PlainTextField extends BaseField<string> {
   public minLength?: number;
   public maxLength?: number;
-  public required: boolean;
-  public errors: string[];
 
   constructor(public label, public value?: string) {
     super(label)
   }
 
   public validate() {
-    if (this.required && !this.value) {
-      this.errors.push('value cannot be empty')
-    }
+    this.validate();
 
     if (!this.value) {
       return
@@ -44,6 +48,27 @@ class PlainTextField extends BaseField {
 
     if (this.maxLength && this.value.length > this.maxLength ) {
       this.errors.push(`value must be at most ${this.maxLength} characters`)
+    }
+  }
+}
+
+class EmailTextField extends BaseField<string> {
+  public regex?: RegExp;
+
+  constructor(public label, public value?: string) {
+    super(label)
+    this.regex = /^([A-Za-z0-9_\-\.])+\@([A-Za-z0-9_\-\.])+\.([A-Za-z]{2,4})$/
+  }
+
+  public validate() {
+    this.validate();
+
+    if (!this.value) {
+      return
+    }
+
+    if (this.regex && !this.value.match(this.regex)) {
+      this.errors.push("invalid format")
     }
   }
 }
