@@ -30,6 +30,7 @@ class BaseField<TValue> {
 class PlainTextField extends BaseField<string> {
   public minLength?: number;
   public maxLength?: number;
+  public regex?: RegExp;
 
   constructor(public label, public value?: string) {
     super(label)
@@ -49,26 +50,16 @@ class PlainTextField extends BaseField<string> {
     if (this.maxLength && this.value.length > this.maxLength ) {
       this.errors.push(`value must be at most ${this.maxLength} characters`)
     }
-  }
-}
-
-class EmailTextField extends BaseField<string> {
-  public regex?: RegExp;
-
-  constructor(public label, public value?: string) {
-    super(label)
-    this.regex = /^([A-Za-z0-9_\-\.])+\@([A-Za-z0-9_\-\.])+\.([A-Za-z]{2,4})$/
-  }
-
-  public validate() {
-    this.validate();
-
-    if (!this.value) {
-      return
-    }
 
     if (this.regex && !this.value.match(this.regex)) {
       this.errors.push("invalid format")
     }
+  }
+}
+
+class EmailTextField extends PlainTextField {
+  constructor(public label, public value?: string) {
+    super(label)
+    this.regex = /^([A-Za-z0-9_\-\.])+\@([A-Za-z0-9_\-\.])+\.([A-Za-z]{2,4})$/
   }
 }
