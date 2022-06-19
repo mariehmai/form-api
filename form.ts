@@ -1,19 +1,26 @@
-type Field =
+type FieldType =
   | PlainTextField
   | EmailTextField
   | BooleanField
   | SingleSelectField<unknown>
-  | FileField
+  | FileField;
+
+type FieldValueType = FieldType['value'];
 
 class Form {
   public formId: string;
-  public fields: Field[];
+  public fields: Field<FieldValueType>[];
 
   constructor(public title: string, public description?: string) { }
 
-  public addField(field: Field) {
+  public addField(field: Field<FieldValueType>) {
     field.form = this;
     this.fields.push(field);
+  }
+
+  public addFieldAtIndex(index: number, field: Field<FieldValueType>) {
+    field.form = this
+    this.fields.splice(index, 0, field)
   }
 
   public validate() { this.fields.forEach(f => f.validate()); }
@@ -21,13 +28,13 @@ class Form {
   public get isValid() { return this.fields.every(f => f.isValid); }
 }
 
-class BaseField<TValue> {
+class Field<TValue> {
   public fieldId: string;
   public form: Form;
   public value?: TValue;
   public errors: string[];
-  public conditionalField: Field;
-  public conditionalValue: Field['value'];
+  public conditionalField: FieldType;
+  public conditionalValue: FieldValueType;
 
   constructor(public label: string, public required: boolean = false) { }
 
@@ -46,7 +53,7 @@ class BaseField<TValue> {
 
   public get isValid() { return this.errors.length === 0; }
 
-  public addConditional(otherField: Field, conditionalValue: Field['value']) {
+  public addConditional(otherField: FieldType, conditionalValue: FieldValueType) {
     this.conditionalField = otherField;
     this.conditionalValue = conditionalValue;
   }
@@ -54,9 +61,13 @@ class BaseField<TValue> {
   public get visible() {
     return this.conditionalField.value === this.conditionalValue;
   }
+
+  public get order() {
+    return this.form.fields.indexOf(this)
+  }
 }
 
-class PlainTextField extends BaseField<string> {
+class PlainTextField extends Field<string> {
   public minLength?: number;
   public maxLength?: number;
   public regex?: RegExp;
@@ -85,13 +96,13 @@ class EmailTextField extends PlainTextField {
   }
 }
 
-class BooleanField extends BaseField<boolean> {
+class BooleanField extends Field<boolean> {
   constructor(public label: string, public value: boolean = false) {
     super(label);
   }
 }
 
-class SingleSelectField<TOption> extends BaseField<TOption> {
+class SingleSelectField<TOption> extends Field<TOption> {
   public selected?: TOption;
 
   constructor(public label: string, public options: TOption[], defaultSelected?: TOption) {
@@ -106,7 +117,7 @@ class SingleSelectField<TOption> extends BaseField<TOption> {
   }
 }
 
-class FileField extends BaseField<File> {
+class FileField extends Field<File> {
   public maxSize?: number;
   public allowedExtensions: string[];
   public fileNameRegex?: RegExp;
