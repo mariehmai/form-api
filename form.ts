@@ -3,6 +3,7 @@ type Field =
   | EmailTextField
   | BooleanField
   | SingleSelectField<unknown>
+  | FileField
 
 class Form {
   public formId: string;
@@ -80,5 +81,33 @@ class SingleSelectField<TOption> extends BaseField<TOption> {
   constructor(public label: string, public options: TOption[], defaultSelected?: typeof options[0]) {
     super(label)
     this.selected = defaultSelected
+  }
+}
+
+class FileField extends BaseField<File> {
+  public maxSize?: number;
+  public allowedExtensions: string[]
+  public fileNameRegex?: RegExp;
+
+  constructor(public label: string, public value?: File) {
+    super(label)
+  }
+
+  public addAllowedExtension(type: string) {
+    this.allowedExtensions.push(type);
+  }
+
+  public validate() {
+    this.validate();
+
+    if (!this.value) {
+      return;
+    }
+    if (this.fileNameRegex && !this.value.name.match(this.fileNameRegex)) {
+      this.errors.push(`invalid file name`)
+    }
+    if (this.maxSize && this.value.size > this.maxSize) {
+      this.errors.push(`file size must not exceeds ${this.maxSize} bytes`)
+    }
   }
 }
