@@ -15,6 +15,10 @@ class Form {
     field.form = this;
     this.fields.push(field);
   }
+
+  public validate() { this.fields.forEach(f => f.validate()) }
+
+  public get isValid() { return this.fields.every(f => f.isValid)}
 }
 
 class BaseField<TValue> {
@@ -32,6 +36,8 @@ class BaseField<TValue> {
       this.errors.push('value cannot be empty')
     }
   }
+
+  public get isValid() { return this.errors.length === 0 }
 
   public addConditional(otherField: Field, conditionalValue: Field['value']) {
     this.conditionalField = otherField;
