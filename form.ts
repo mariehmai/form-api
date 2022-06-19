@@ -45,17 +45,14 @@ class PlainTextField extends BaseField<string> {
     this.validate();
 
     if (!this.value) {
-      return
+      return;
     }
-
     if (this.minLength && this.value.length < this.minLength) {
       this.errors.push(`value must be at least ${this.minLength} characters`)
     }
-
     if (this.maxLength && this.value.length > this.maxLength) {
       this.errors.push(`value must be at most ${this.maxLength} characters`)
     }
-
     if (this.regex && !this.value.match(this.regex)) {
       this.errors.push("invalid format")
     }
