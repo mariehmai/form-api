@@ -32,6 +32,8 @@ class BaseField<TValue> {
   constructor(public label: string, public required: boolean = false) { }
 
   public validate() {
+    this.errors = [];
+
     if (this.required && !this.value) {
       this.errors.push('value cannot be empty')
     }
