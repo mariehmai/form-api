@@ -10,7 +10,7 @@ tsc form.ts --target ES2016 && node form.js
 
 ### Object-oriented design
 
-The prototyping of a form could follow different designs. I went with OO mainly as I saw some use case of inheritance, encapsulation, a good way to structure the form and field object.
+The prototyping of a form could follow different designs. I went with OO mainly as I saw some use case of inheritance, encapsulation, a good way to structure the form and field objects, and to hold some state.
 
 After designing a few specific typed field, plain text, email text, some common properties started to be recurring and an abstraction could be extracted: the `Field` abstract class, which aim wouldn't be to be instantiated, instead the typed field would inherit from it. Having is abstract also allows to have some common logic extracted to it (see [validation](#form-and-field-validation)).
 
@@ -20,7 +20,7 @@ When thinking of a form, a good to have is the ability to reorder/insert fields 
 
 ### Form and field validation
 
-To make the product close to functional, form validation is a critical requirement. To make it happen, I grouped the common validation logic (`required` field) into the `Field.validate` method and then called `Field.validateValue`, that each class that extends `Field` can override.
+To make the product close to functional, form validation is a critical requirement. To make it happen, I grouped the common validation logic (e.g. `required` field) into the `Field.validate` method and then called `Field.validateValue`, that each class that extends `Field` can override.
 
 ### Conditional field and visibility
 
@@ -34,8 +34,8 @@ To handle the constraint of the conditional field and its visibility, I followed
 
 At the moment `Field` is an abstract class, containing the common properties and method and logic (validation of `required` field). We could have instead `Field` as an interface, unaware of the implementation details.
 
-- For the validation, as the current implementation seems quite trivial, defining a `validate(): string[]` contract that each of the classes would have to implement could be a better solution. This would allow to return the array of errors for each validation, instead of having to reset it as it is currently, which is more error prone.
-- We could then have two classes implementing that `Field` interface: 1. a `ConditionalField` would be composed with a "base" field, a "conditional" field and its value, 2. a `BaseField` that would have the common properties and methods and all the `FieldType` would extends `BaseField`. This way, we separate the concern of conditional field and visibility into separate entities.
+- For the validation, the interface would define a `validate(): string[]` contract that each of the classes would have to implement could be a better solution, instead of the current overriding happening with `validateValue()`.
+- We could also have two classes implementing that `Field` interface: 1. a `ConditionalField` would be composed with a "base" field, a "conditional" field and its value, 2. a `BaseField` that would have the common properties and methods and all the `FieldType` would extends `BaseField`. This way, we separate the concern of conditional field and visibility into separate entities.
 
 ### Missing interactions
 

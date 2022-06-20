@@ -25,8 +25,6 @@ class Form {
 
   public validate() { this._fields.forEach(f => f.validate()); }
 
-  public get isValid() { return this._fields.every(f => f.isValid); }
-
   public get formId() { return this._formId; }
 
   public get title() { return this._title; }
@@ -41,26 +39,25 @@ class Form {
 abstract class Field<TValue> {
   private _fieldId: string;
   private _form: Form;
-  private _errors: string[] = [];
   private _conditionalField: FieldType;
   private _conditionalValue: FieldValueType;
 
   constructor(private _label: string, private _value?: TValue, private _required: boolean = false) { }
 
-  public validate() {
-    this._errors = [];
+  public validate(): string[] {
+    const errors: string[] = [];
 
     if (this._required && !this._value) {
-      this.addError('value cannot be empty');
+      errors.push('value cannot be empty')
     }
     if (this._value) {
-      this.validateValue(this._value);
+      return errors.concat(this.validateValue(this._value));
     }
+
+    return errors;
   }
 
-  public validateValue(value: TValue) { }
-
-  public get isValid() { return this._errors.length === 0; }
+  public validateValue(value: TValue): string[] { return []; }
 
   public addConditional(otherField: FieldType, conditionalValue: FieldValueType) {
     this._conditionalField = otherField;
@@ -96,9 +93,6 @@ abstract class Field<TValue> {
 
   public get conditionalValue() { return this._conditionalValue; }
   public set conditionalValue(value: FieldValueType) { this._conditionalValue = value; }
-
-  public get errors() { return this._errors; }
-  public addError(error: string) { this._errors.push(error); }
 }
 
 class PlainTextField extends Field<string> {
@@ -109,16 +103,21 @@ class PlainTextField extends Field<string> {
     super(label, value);
   }
 
-  public validateValue(value: string) {
+  public validateValue(value: string): string[] {
+    const errors: string[] = [];
+
     if (this.minLength && value.length < this.minLength) {
-      this.addError(`value must be at least ${this.minLength} characters`);
+      errors.push(`value must be at least ${this.minLength} characters`);
     }
     if (this.maxLength && value.length > this.maxLength) {
-      this.addError(`value must be at most ${this.maxLength} characters`);
+      errors.push(`value must be at most ${this.maxLength} characters`);
     }
     if (this.regex && !value.match(this.regex)) {
-      this.addError("invalid format");
+      errors.push("invalid format");
     }
+
+
+    return errors;
   }
 
   public get minLength() { return this._minLength; }
@@ -149,10 +148,14 @@ class SingleSelectField<TOption> extends Field<TOption> {
     super(label, defaultSelected);
   }
 
-  public validateValue(value: TOption) {
+  public validateValue(value: TOption): string[] {
+    const errors: string[] = [];
+
     if (!this._options.indexOf(value)) {
-      this.addError("value not in allowed choices");
+      errors.push("value not in allowed choices");
     }
+
+    return errors;
   }
 
   public get options() { return this._options; }
@@ -172,13 +175,17 @@ class FileField extends Field<File> {
     this._allowedExtensions.push(type);
   }
 
-  public validateValue(value: File) {
+  public validateValue(value: File): string[] {
+    const errors: string[] = [];
+
     if (this._fileNameRegex && !value.name.match(this._fileNameRegex)) {
-      this.addError(`invalid file name`);
+      errors.push(`invalid file name`);
     }
     if (this._maxSize && value.size > this._maxSize) {
-      this.addError(`file size must not exceeds ${this._maxSize} bytes`);
+      errors.push(`file size must not exceeds ${this._maxSize} bytes`);
     }
+
+    return errors;
   }
 
   public get maxSize() { return this._maxSize; }
