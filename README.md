@@ -12,7 +12,7 @@ tsc form.ts --target ES2016 && node form.js
 
 The prototyping of a form could follow different designs. I went with OO mainly as I saw some use case of inheritance, encapsulation, a good way to structure the form and field objects, and to hold some state.
 
-After designing a few specific typed field, plain text, email text, some common properties started to be recurring and an abstraction could be extracted: the `Field` abstract class, which aim wouldn't be to be instantiated, instead the typed field would inherit from it. Having is abstract also allows to have some common logic extracted to it (see [validation](#form-and-field-validation)).
+After designing a few specific typed field, plain text, email text, some properties started to be recurring and an abstraction could be extracted: the `Field` abstract class and the typed fields would inherit from it. Having it abstract allows to have some common properties and also logic extracted to it (see [validation](#form-and-field-validation)).
 
 ### Fields ordering within the form
 
