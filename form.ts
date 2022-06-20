@@ -28,7 +28,7 @@ class Form {
   public get isValid() { return this.fields.every(f => f.isValid); }
 }
 
-class Field<TValue> {
+abstract class Field<TValue> {
   public fieldId: string;
   public form: Form;
   public value?: TValue;
