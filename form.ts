@@ -134,11 +134,8 @@ class BooleanField extends Field<boolean> {
 }
 
 class SingleSelectField<TOption> extends Field<TOption> {
-  private _selected?: TOption;
-
   constructor(label: string, private _options: TOption[], defaultSelected?: TOption) {
-    super(label);
-    this._selected = defaultSelected;
+    super(label, defaultSelected);
   }
 
   public validateValue(value: TOption) {
@@ -149,9 +146,6 @@ class SingleSelectField<TOption> extends Field<TOption> {
 
   public get options() { return this._options; }
   public set options(options: TOption[]) { this._options = options; }
-
-  public get selected() { return this._options; }
-  public set setSelected(option: TOption) { this._selected = option; }
 }
 
 class FileField extends Field<File> {
