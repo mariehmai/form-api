@@ -11,7 +11,7 @@ class Form {
   private _formId: string;
   private _fields: Field<FieldValueType>[] = [];
 
-  constructor(public title: string, public description?: string) { }
+  constructor(private _title: string, private _description?: string) { }
 
   public addField(field: Field<FieldValueType>) {
     field.form = this;
@@ -28,6 +28,12 @@ class Form {
   public get isValid() { return this._fields.every(f => f.isValid); }
 
   public get formId() { return this._formId; }
+
+  public get title() { return this._title; }
+  public set title(title: string) { this._title = title }
+
+  public get description() { return this._description; }
+  public set description(description: string | undefined) { this._description = description }
 
   public get fields() { return this._fields; }
 }
@@ -71,6 +77,8 @@ abstract class Field<TValue> {
     return this._form.fields.indexOf(this)
   }
 
+  public get fieldId() { return this._fieldId; }
+
   public get form() { return this._form; }
   public set form(form: Form) { this._form = form; }
 
@@ -90,7 +98,7 @@ abstract class Field<TValue> {
   public set conditionalValue(value: FieldValueType) { this._conditionalValue = value; }
 
   public get errors() { return this._errors; }
-  public set errors(errors: string[]) { this._errors = errors; }
+  public addError(error: string) { this._errors.push(error); }
 }
 
 class PlainTextField extends Field<string> {
@@ -103,13 +111,14 @@ class PlainTextField extends Field<string> {
 
   public validateValue(value: string) {
     if (this.minLength && value.length < this.minLength) {
-      this.errors.push(`value must be at least ${this.minLength} characters`);
+      this.addError(`value must be at least ${this.minLength} characters`);
     }
     if (this.maxLength && value.length > this.maxLength) {
-      this.errors.push(`value must be at most ${this.maxLength} characters`);
+      this.addError(`value must be at least ${this.minLength} characters`);
+      this.addError(`value must be at most ${this.maxLength} characters`);
     }
     if (this.regex && !value.match(this.regex)) {
-      this.errors.push("invalid format");
+      this.addError("invalid format");
     }
   }
 
@@ -143,7 +152,7 @@ class SingleSelectField<TOption> extends Field<TOption> {
 
   public validateValue(value: TOption) {
     if (!this._options.indexOf(value)) {
-      this.errors.push("value not in allowed choices");
+      this.addError("value not in allowed choices");
     }
   }
 
@@ -166,10 +175,10 @@ class FileField extends Field<File> {
 
   public validateValue(value: File) {
     if (this._fileNameRegex && !value.name.match(this._fileNameRegex)) {
-      this.errors.push(`invalid file name`);
+      this.addError(`invalid file name`);
     }
     if (this._maxSize && value.size > this._maxSize) {
-      this.errors.push(`file size must not exceeds ${this._maxSize} bytes`);
+      this.addError(`file size must not exceeds ${this._maxSize} bytes`);
     }
   }
 
