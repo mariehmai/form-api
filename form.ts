@@ -50,11 +50,11 @@ abstract class Field<TValue> {
   public validate() {
     this._errors = [];
 
-    if (this._required && !this.value) {
-      this._errors.push('value cannot be empty');
+    if (this._required && !this._value) {
+      this.addError('value cannot be empty');
     }
-    if (this.value) {
-      this.validateValue(this.value);
+    if (this._value) {
+      this.validateValue(this._value);
     }
   }
 
@@ -114,7 +114,6 @@ class PlainTextField extends Field<string> {
       this.addError(`value must be at least ${this.minLength} characters`);
     }
     if (this.maxLength && value.length > this.maxLength) {
-      this.addError(`value must be at least ${this.minLength} characters`);
       this.addError(`value must be at most ${this.maxLength} characters`);
     }
     if (this.regex && !value.match(this.regex)) {
