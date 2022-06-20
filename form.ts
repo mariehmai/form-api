@@ -8,40 +8,43 @@ type FieldType =
 type FieldValueType = FieldType['value'];
 
 class Form {
-  public formId: string;
-  public fields: Field<FieldValueType>[] = [];
+  private _formId: string;
+  private _fields: Field<FieldValueType>[] = [];
 
   constructor(public title: string, public description?: string) { }
 
   public addField(field: Field<FieldValueType>) {
     field.form = this;
-    this.fields.push(field);
+    this._fields.push(field);
   }
 
   public addFieldAtIndex(index: number, field: Field<FieldValueType>) {
     field.form = this
-    this.fields.splice(index, 0, field)
+    this._fields.splice(index, 0, field)
   }
 
-  public validate() { this.fields.forEach(f => f.validate()); }
+  public validate() { this._fields.forEach(f => f.validate()); }
 
-  public get isValid() { return this.fields.every(f => f.isValid); }
+  public get isValid() { return this._fields.every(f => f.isValid); }
+
+  public get formId() { return this._formId; }
+
+  public get fields() { return this._fields; }
 }
 
 abstract class Field<TValue> {
-  public fieldId: string;
-  public form: Form;
-  public value?: TValue;
+  private _fieldId: string;
+  private _form: Form;
   public errors: string[] = [];
-  public conditionalField: FieldType;
-  public conditionalValue: FieldValueType;
+  private _conditionalField: FieldType;
+  private _conditionalValue: FieldValueType;
 
-  constructor(public label: string, public required: boolean = false) { }
+  constructor(private _label: string, private _value?: TValue, private _required: boolean = false) { }
 
   public validate() {
     this.errors = [];
 
-    if (this.required && !this.value) {
+    if (this._required && !this.value) {
       this.errors.push('value cannot be empty');
     }
     if (this.value) {
@@ -54,28 +57,45 @@ abstract class Field<TValue> {
   public get isValid() { return this.errors.length === 0; }
 
   public addConditional(otherField: FieldType, conditionalValue: FieldValueType) {
-    this.conditionalField = otherField;
-    this.conditionalValue = conditionalValue;
+    this._conditionalField = otherField;
+    this._conditionalValue = conditionalValue;
   }
 
   public get visible() {
     if (!this.conditionalField) return true;
 
-    return this.conditionalField.value === this.conditionalValue;
+    return this.conditionalField.value === this._conditionalValue;
   }
 
   public get order() {
-    return this.form.fields.indexOf(this)
+    return this._form.fields.indexOf(this)
   }
+
+  public get form() { return this._form; }
+  public set form(form: Form) { this._form = form; }
+
+  public get label() { return this._label; }
+  public set label(label: string) { this._label = label; }
+
+  public get value() { return this._value; }
+  public set value(value: TValue | undefined) { this._value = value; }
+
+  public get required() { return this._required; }
+  public set required(required: boolean) { this._required = required; }
+
+  public get conditionalField() { return this._conditionalField; }
+  public set conditionalField(field: FieldType) { this._conditionalField = field; }
+
+  public get conditionalValue() { return this._conditionalValue; }
+  public set conditionalValue(value: FieldValueType) { this._conditionalValue = value; }
 }
 
 class PlainTextField extends Field<string> {
-  public minLength?: number;
-  public maxLength?: number;
-  public regex?: RegExp;
+  private _minLength?: number;
+  private _maxLength?: number;
 
-  constructor(public label: string, public value?: string) {
-    super(label);
+  constructor(label: string, value?: string, private _regex?: RegExp) {
+    super(label, value);
   }
 
   public validateValue(value: string) {
@@ -89,57 +109,81 @@ class PlainTextField extends Field<string> {
       this.errors.push("invalid format");
     }
   }
+
+  public get minLength() { return this._minLength; }
+  public set minLength(length: number | undefined) { this._minLength = length; }
+
+  public get maxLength() { return this._maxLength; }
+  public set maxLength(length: number | undefined) { this._maxLength = length; }
+
+  public get regex() { return this._regex; }
+  public set setRegex(regex: RegExp) { this._regex = regex; }
 }
 
 class EmailTextField extends PlainTextField {
-  constructor(public label: string, public value?: string) {
-    super(label);
-    this.regex = /^([A-Za-z0-9_\-\.])+\@([A-Za-z0-9_\-\.])+\.([A-Za-z]{2,4})$/;
+  constructor(label: string, value?: string) {
+    const emailRegExp = /^([A-Za-z0-9_\-\.])+\@([A-Za-z0-9_\-\.])+\.([A-Za-z]{2,4})$/;
+    super(label, value, emailRegExp);
   }
 }
 
 class BooleanField extends Field<boolean> {
-  constructor(public label: string, public value: boolean = false) {
-    super(label);
+  constructor(label: string, value: boolean = false) {
+    super(label, value);
   }
 }
 
 class SingleSelectField<TOption> extends Field<TOption> {
-  public selected?: TOption;
+  private _selected?: TOption;
 
-  constructor(public label: string, public options: TOption[], defaultSelected?: TOption) {
+  constructor(label: string, private _options: TOption[], defaultSelected?: TOption) {
     super(label);
-    this.selected = defaultSelected;
+    this._selected = defaultSelected;
   }
 
   public validateValue(value: TOption) {
-    if (!this.options.indexOf(value)) {
+    if (!this._options.indexOf(value)) {
       this.errors.push("value not in allowed choices");
     }
   }
+
+  public get options() { return this._options; }
+  public set options(options: TOption[]) { this._options = options; }
+
+  public get selected() { return this._options; }
+  public set setSelected(option: TOption) { this._selected = option; }
 }
 
 class FileField extends Field<File> {
-  public maxSize?: number;
-  public allowedExtensions: string[];
-  public fileNameRegex?: RegExp;
+  private _maxSize?: number;
+  private _allowedExtensions: string[];
+  private _fileNameRegex?: RegExp;
 
-  constructor(public label: string, public value?: File) {
-    super(label);
+  constructor(label: string, value?: File) {
+    super(label, value);
   }
 
   public addAllowedExtension(type: string) {
-    this.allowedExtensions.push(type);
+    this._allowedExtensions.push(type);
   }
 
   public validateValue(value: File) {
-    if (this.fileNameRegex && !value.name.match(this.fileNameRegex)) {
+    if (this._fileNameRegex && !value.name.match(this._fileNameRegex)) {
       this.errors.push(`invalid file name`);
     }
-    if (this.maxSize && value.size > this.maxSize) {
-      this.errors.push(`file size must not exceeds ${this.maxSize} bytes`);
+    if (this._maxSize && value.size > this._maxSize) {
+      this.errors.push(`file size must not exceeds ${this._maxSize} bytes`);
     }
   }
+
+  public get maxSize() { return this._maxSize; }
+  public set maxSize(size: number | undefined) { this._maxSize = size; }
+
+  public get allowedExtensions() { return this._allowedExtensions; }
+  public set allowedExtensions(extensions: string[]) { this._allowedExtensions = extensions; }
+
+  public get fileNameRegex() { return this._fileNameRegex; }
+  public set fileNameRegex(regex: RegExp | undefined) { this._fileNameRegex = regex; }
 }
 
 const plainText = new PlainTextField("How long did this take?");
