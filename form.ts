@@ -35,17 +35,17 @@ class Form {
 abstract class Field<TValue> {
   private _fieldId: string;
   private _form: Form;
-  public errors: string[] = [];
+  private _errors: string[] = [];
   private _conditionalField: FieldType;
   private _conditionalValue: FieldValueType;
 
   constructor(private _label: string, private _value?: TValue, private _required: boolean = false) { }
 
   public validate() {
-    this.errors = [];
+    this._errors = [];
 
     if (this._required && !this.value) {
-      this.errors.push('value cannot be empty');
+      this._errors.push('value cannot be empty');
     }
     if (this.value) {
       this.validateValue(this.value);
@@ -54,7 +54,7 @@ abstract class Field<TValue> {
 
   public validateValue(value: TValue) { }
 
-  public get isValid() { return this.errors.length === 0; }
+  public get isValid() { return this._errors.length === 0; }
 
   public addConditional(otherField: FieldType, conditionalValue: FieldValueType) {
     this._conditionalField = otherField;
@@ -88,6 +88,9 @@ abstract class Field<TValue> {
 
   public get conditionalValue() { return this._conditionalValue; }
   public set conditionalValue(value: FieldValueType) { this._conditionalValue = value; }
+
+  public get errors() { return this._errors; }
+  public set errors(errors: string[]) { this._errors = errors; }
 }
 
 class PlainTextField extends Field<string> {
